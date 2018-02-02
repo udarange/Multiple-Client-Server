@@ -44,8 +44,14 @@ public class TCPClient2 {
 //                dOut.writeUTF(line);
 //                dOut.flush();
 
+                System.out.println("Listening...");
                 line = dIn.readUTF();
+                if (line.equals("NOTIFY")) {
+                    dOut.writeUTF("PULL"); //send PULL or null | keyboard input
+                    dOut.flush();
+                }
                 System.out.println("RECEIVED FROM SERVER: " + line);
+
             }
         } catch (Exception e) {
         }

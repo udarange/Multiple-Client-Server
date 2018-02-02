@@ -28,36 +28,45 @@ import java.util.Iterator;
 public class TCPServer {
     public static void main(String argv[]) throws Exception {
         int PORT = 4455;
+        ArrayList<ConnectedClient> connectedClientList = new ArrayList<ConnectedClient>();
+
         ServerSocket serverSocket = new ServerSocket(PORT);
         System.out.println("Server Started!!!");
 
-        ArrayList<Socket> activeClients = new ArrayList<Socket>();
-        System.out.println(">>>>>>>>>>> " + Arrays.toString(activeClients.toArray()));
+//        ConnectedClient connectedClient = new ConnectedClient();
+        System.out.println("SOCKET LIST: " + Arrays.toString(connectedClientList.toArray()));
 
         while (true) {
+            ConnectedClient newClient = new ConnectedClient();
             Socket s = serverSocket.accept();
-            activeClients.add(s);
-            System.out.println(">>>>>>>>>>> " + Arrays.toString(activeClients.toArray()));
+            newClient.setSocket(s);
+            newClient.setClientId(1);
+            connectedClientList.add(newClient);
+            
+            System.out.println("SOCKET LIST: " + Arrays.toString(connectedClientList.toArray()));
 
-            notifyClient(activeClients);
-            listenToClient(activeClients);
+            notifyClient(connectedClientList);
+            listenToClient(connectedClientList);
         }
     }
 
     /**
      * listen PULL request
      */
-    private static void listenToClient(ArrayList<Socket> activeClients) {
-        Iterator<Socket> activeClient = activeClients.iterator();
+    private static void listenToClient(ArrayList<ConnectedClient> activeClients) {
+        String weatherIndex = updateWeatherIndex();
+        Iterator<ConnectedClient> activeClient = activeClients.iterator();
 
         while (activeClient.hasNext()) {
             try {
-                Socket socket = activeClient.next();
-                DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+                ConnectedClient connectedClient = activeClient.next();
+                DataInputStream inputStream = new DataInputStream(connectedClient.getSocket().getInputStream());
+                DataOutputStream outputStream = new DataOutputStream(connectedClient.getSocket().getOutputStream());
 
                 String isPull = inputStream.readUTF();//reading
-                if (isPull.equals("PULL")){
-                    System.out.println("UPDATED");
+                if (isPull.equals("PULL")) {
+                    outputStream.writeUTF("WEATHER INDEX: " + weatherIndex);//writing
+                    outputStream.flush();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -68,13 +77,13 @@ public class TCPServer {
     /**
      * notify when updated data available
      */
-    public static void notifyClient(ArrayList<Socket> activeClients) {
-        Iterator<Socket> activeClient = activeClients.iterator();
+    private static void notifyClient(ArrayList<ConnectedClient> activeClients) {
+        Iterator<ConnectedClient> activeClient = activeClients.iterator();
 
         while (activeClient.hasNext()) {
             try {
-                Socket socket = activeClient.next();
-                DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+                ConnectedClient connectedClient = activeClient.next();
+                DataOutputStream outputStream = new DataOutputStream(connectedClient.getSocket().getOutputStream());
 
                 outputStream.writeUTF("NOTIFY");//writing
                 outputStream.flush();
@@ -87,8 +96,7 @@ public class TCPServer {
     /**
      * weather parameter update
      */
-    public static void updateWeatherIndex() {
-
-
+    private static String updateWeatherIndex() {
+        return "Partly Cloudy";
     }
 }

@@ -12,17 +12,30 @@
 
 package Server;
 
-import java.io.DataOutputStream;
-import java.util.ArrayList;
+import java.net.Socket;
 
 /**
+ * java bean class for connected client
  * Created by archana on 2/1/18.
  */
 public class ConnectedClient {
-    ArrayList<DataOutputStream> activeClients = new ArrayList<DataOutputStream>();
+//    private ArrayList<Socket> activeClients = new ArrayList<Socket>();
+    private Socket socket;
+    private int clientId;
 
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
 
+    public void setClientId(int clientId) {
+        this.clientId = clientId;
+    }
 
+    public Socket getSocket() {
+        return socket;
+    }
 
-
+    public int getClientId() {
+        return clientId;
+    }
 }

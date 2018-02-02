@@ -39,14 +39,12 @@ public class TCPClient {
 
             String line = null;
             while (true) {
-//                line = keyboard.readLine();
-//                System.out.println("SEND TO SERVER: "+ line);
-//                dOut.writeUTF(line);
-//                dOut.flush();
 
+                System.out.println("Listening...");
                 line = dIn.readUTF();
                 if (line.equals("NOTIFY")) {
-                    dOut.writeUTF("PULL");
+                    // line = keyboard.readLine();
+                    dOut.writeUTF("null"); //send PULL or null | keyboard input
                     dOut.flush();
                 }
                 System.out.println("RECEIVED FROM SERVER: " + line);
