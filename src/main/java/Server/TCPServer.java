@@ -22,39 +22,55 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Scanner;
 
 public class TCPServer {
-    public static void main(String argv[]) throws Exception {
-        int PORT = 4455;
-        ArrayList<ConnectedClient> connectedClientList = new ArrayList<ConnectedClient>();
+    private static String weatherIndex;
+    private static final int PORT = 4455;
+    private static ArrayList<ConnectedClient> connectedClientList = new ArrayList<ConnectedClient>();
 
-        ServerSocket serverSocket = new ServerSocket(PORT);
+    public static void main(String argv[]) throws Exception {
         System.out.println("Server Started!!!");
 
-//        ConnectedClient connectedClient = new ConnectedClient();
-        System.out.println("SOCKET LIST: " + Arrays.toString(connectedClientList.toArray()));
+        /* thread for client accept() */
+        final Thread t1 = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    ServerSocket serverSocket = new ServerSocket(PORT);
+                    while (true) {
+                        Socket s = serverSocket.accept();
+                        ConnectedClient newClient = new ConnectedClient();
+                        newClient.setSocket(s);
+                        newClient.setClientId(1);
+                        connectedClientList.add(newClient);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        t1.start();
 
+
+//        int xx =0;
         while (true) {
-            ConnectedClient newClient = new ConnectedClient();
-            Socket s = serverSocket.accept();
-            newClient.setSocket(s);
-            newClient.setClientId(1);
-            connectedClientList.add(newClient);
-            
-            System.out.println("SOCKET LIST: " + Arrays.toString(connectedClientList.toArray()));
+//            System.out.println(++xx + " SOCKET LIST: " + Arrays.toString(connectedClientList.toArray()));
 
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Input weather : ");
+            String weatherState = scanner.nextLine();
+
+            updateWeatherIndex(weatherState);
             notifyClient(connectedClientList);
-            listenToClient(connectedClientList);
+            listenToPullReq(connectedClientList);
         }
     }
 
     /**
      * listen PULL request
      */
-    private static void listenToClient(ArrayList<ConnectedClient> activeClients) {
-        String weatherIndex = updateWeatherIndex();
+    private static void listenToPullReq(ArrayList<ConnectedClient> activeClients) {
         Iterator<ConnectedClient> activeClient = activeClients.iterator();
 
         while (activeClient.hasNext()) {
@@ -64,8 +80,11 @@ public class TCPServer {
                 DataOutputStream outputStream = new DataOutputStream(connectedClient.getSocket().getOutputStream());
 
                 String isPull = inputStream.readUTF();//reading
-                if (isPull.equals("PULL")) {
-                    outputStream.writeUTF("WEATHER INDEX: " + weatherIndex);//writing
+                if (isPull.equals("y")) {    // Client request an update
+                    outputStream.writeUTF("WEATHER CONDITION : " + weatherIndex);//writing
+                    outputStream.flush();
+                } else {
+                    outputStream.writeUTF("null");//writing
                     outputStream.flush();
                 }
             } catch (IOException e) {
@@ -96,7 +115,7 @@ public class TCPServer {
     /**
      * weather parameter update
      */
-    private static String updateWeatherIndex() {
-        return "Partly Cloudy";
+    static void updateWeatherIndex(String s) {
+        weatherIndex =s;
     }
 }

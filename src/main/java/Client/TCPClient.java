@@ -21,11 +21,7 @@ import java.net.Socket;
  */
 public class TCPClient {
     public static void main(String[] args) throws IOException, InterruptedException {
-//        ClientImpl client = new ClientImpl(new Socket("localhost", PORT));
-//        client.clientGenerator();
-
-        ///////////////////////////////////////////////////////////////////
-        int PORT = 4455;
+        final int PORT = 4455;
         try {
             Socket socket = new Socket("localhost", PORT);
 
@@ -37,21 +33,23 @@ public class TCPClient {
 
             BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
 
-            String line = null;
+            String inputString = null;
             while (true) {
-
-                System.out.println("Listening...");
-                line = dIn.readUTF();
-                if (line.equals("NOTIFY")) {
-                    // line = keyboard.readLine();
-                    dOut.writeUTF("null"); //send PULL or null | keyboard input
+                System.out.println("\nListening...");
+                inputString = dIn.readUTF();
+                if (inputString.equals("NOTIFY")) {
+                    System.out.println("RECEIVED FROM SERVER: " + inputString);
+                    System.out.print("Do you want updated Weather Index (y/n): ");
+                    dOut.writeUTF(keyboard.readLine()); //send PULL or null | keyboard input
                     dOut.flush();
+                    inputString = dIn.readUTF();
+                    if (!inputString.equals("null")) {
+                        System.out.println("RECEIVED FROM SERVER: " + inputString);
+                    }
                 }
-                System.out.println("RECEIVED FROM SERVER: " + line);
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
-        ///////////////////////////////////////////////////////////////////
-
     }
 }

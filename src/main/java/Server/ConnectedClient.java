@@ -19,7 +19,6 @@ import java.net.Socket;
  * Created by archana on 2/1/18.
  */
 public class ConnectedClient {
-//    private ArrayList<Socket> activeClients = new ArrayList<Socket>();
     private Socket socket;
     private int clientId;
 
