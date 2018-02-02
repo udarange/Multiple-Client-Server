@@ -32,38 +32,30 @@ public class TCPServer {
         System.out.println("Server Started!!!");
 
         ArrayList<Socket> activeClients = new ArrayList<Socket>();
-        ArrayList<DataOutputStream> clientsOut = new ArrayList<DataOutputStream>();
-        ArrayList<DataInputStream> clientsIn = new ArrayList<DataInputStream>();
-        System.out.println(">>>>>>>>>>> " + Arrays.toString(clientsOut.toArray()));
+        System.out.println(">>>>>>>>>>> " + Arrays.toString(activeClients.toArray()));
 
         while (true) {
             Socket s = serverSocket.accept();
             activeClients.add(s);
-
-            DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
-            DataInputStream inputStream = new DataInputStream(s.getInputStream());
-            clientsOut.add(outputStream);
-            clientsIn.add(inputStream);
             System.out.println(">>>>>>>>>>> " + Arrays.toString(activeClients.toArray()));
 
-            notifyClient(clientsOut);
-            listenToClient(clientsIn);
-
-//            Thread thread = new Thread(new ClientHandler(s));
-//            thread.start();
+            notifyClient(activeClients);
+            listenToClient(activeClients);
         }
     }
 
     /**
      * listen PULL request
      */
-    private static void listenToClient(ArrayList<DataInputStream> clientsIn) {
-        Iterator<DataInputStream> it = clientsIn.iterator();
+    private static void listenToClient(ArrayList<Socket> activeClients) {
+        Iterator<Socket> activeClient = activeClients.iterator();
 
-        while (it.hasNext()) {
+        while (activeClient.hasNext()) {
             try {
-                DataInputStream iss = it.next();
-                String isPull = iss.readUTF();//reading
+                Socket socket = activeClient.next();
+                DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+
+                String isPull = inputStream.readUTF();//reading
                 if (isPull.equals("PULL")){
                     System.out.println("UPDATED");
                 }
@@ -76,14 +68,16 @@ public class TCPServer {
     /**
      * notify when updated data available
      */
-    public static void notifyClient(ArrayList<DataOutputStream> activeClients) {
-        Iterator<DataOutputStream> ot = activeClients.iterator();
+    public static void notifyClient(ArrayList<Socket> activeClients) {
+        Iterator<Socket> activeClient = activeClients.iterator();
 
-        while (ot.hasNext()) {
+        while (activeClient.hasNext()) {
             try {
-                DataOutputStream oss = ot.next();
-                oss.writeUTF("NOTIFY");//writing
-                oss.flush();
+                Socket socket = activeClient.next();
+                DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+
+                outputStream.writeUTF("NOTIFY");//writing
+                outputStream.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
