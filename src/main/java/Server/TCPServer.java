@@ -44,7 +44,7 @@ public class TCPServer {
             DataInputStream inputStream = new DataInputStream(s.getInputStream());
             clientsOut.add(outputStream);
             clientsIn.add(inputStream);
-            System.out.println(">>>>>>>>>>> " + Arrays.toString(clientsOut.toArray()));
+            System.out.println(">>>>>>>>>>> " + Arrays.toString(activeClients.toArray()));
 
             notifyClient(clientsOut);
             listenToClient(clientsIn);
